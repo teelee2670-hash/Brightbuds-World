@@ -44,7 +44,12 @@ export default function ResultsScreen() {
     Animated.spring(scaleAnim, { toValue: 1, friction: 4, useNativeDriver: true }).start();
     const msgs = MESSAGES[starCount as keyof typeof MESSAGES] || MESSAGES[1];
     const msg = msgs[Math.floor(Math.random() * msgs.length)];
-    setTimeout(() => speak(msg), 500);
+    if (starCount >= 2) {
+      setTimeout(() => sfx.celebrate(), 300);
+      if (stickerEarned) setTimeout(() => sfx.stickerEarned(), 1500);
+    } else {
+      setTimeout(() => speak(msg), 500);
+    }
   }, []);
 
   const handlePlayAgain = () => {
