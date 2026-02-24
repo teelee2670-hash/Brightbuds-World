@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius, Typography, WorldThemes, WorldId, GameType } from '@/src/utils/theme';
 import { updateLevelProgress, addSticker, updateDailyStats } from '@/src/storage/store';
 import { STICKERS } from '@/src/data/rewards';
-import { speak } from '@/src/utils/audio';
+import { speak, sfx } from '@/src/utils/audio';
 import StarDisplay from '@/src/components/StarDisplay';
 import KidButton from '@/src/components/KidButton';
 
