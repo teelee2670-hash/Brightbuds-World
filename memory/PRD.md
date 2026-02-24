@@ -47,10 +47,15 @@ BrightBuds World is a mobile-first kids learning game app (ages 4+) with Dinosau
 11. ✅ Premium content gating (World 2 & 3 locked)
 12. ✅ Mocked subscription (monthly $1.99 + annual $14.99)
 
-## Subscription (MOCKED)
-- Monthly: $1.99/month with 3-day free trial
-- Annual: $14.99/year (best value)
-- Replace with real RevenueCat SDK for production
+## Subscription Model
+- **No user accounts needed** — RevenueCat ties purchases to the device's Google Play / App Store account
+- No email/username database required
+- Premium purchased by parent through Google Play / App Store via RevenueCat
+- Currently MOCKED — replace with real RevenueCat SDK for production
+
+## Sound Effects
+- TTS-based SFX via expo-speech (tap, correct, wrong, celebrate, count, try again, sticker earned)
+- expo-av installed and ready for real audio file SFX when added
 
 ## Data Model (AsyncStorage)
 - userProfile: avatar, nickname, ageBand, audioOn, onboarded
