@@ -61,7 +61,9 @@ export default function GameScreen() {
           <Text style={styles.exitText}>✕</Text>
         </TouchableOpacity>
         <Text style={styles.levelLabel}>Level {lvl}</Text>
-        <View style={{ width: 40 }} />
+        <TouchableOpacity testID="game-home-btn" onPress={() => router.replace('/map')} style={styles.exitBtn}>
+          <Text style={styles.exitText}>🏠</Text>
+        </TouchableOpacity>
       </View>
       {gType === 'phonics' && <PhonicsGame level={levelData as any} worldId={wId} onComplete={handleComplete} />}
       {gType === 'numbers' && <NumbersGame level={levelData as any} worldId={wId} onComplete={handleComplete} />}
