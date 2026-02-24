@@ -2,16 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Colors, Spacing, Radius, Typography, WorldThemes, WorldId } from '@/src/utils/theme';
 import { ShapesLevel, ShapeType, shuffle } from '@/src/data/gameLevels';
-import { speak } from '@/src/utils/audio';
+import { speak, sfx } from '@/src/utils/audio';
 
 type Props = { level: ShapesLevel; worldId: WorldId; onComplete: (stars: number) => void };
 
 const SHAPE_COLORS: Record<ShapeType, string> = {
   circle: '#FF6B6B', square: '#4ECDC4', triangle: '#FFE66D', rectangle: '#A8E6CF', star: '#FF9F1C',
-};
-
-const SHAPE_LABELS: Record<ShapeType, string> = {
-  circle: '●', square: '■', triangle: '▲', rectangle: '▬', star: '★',
 };
 
 const ShapeView = ({ shape, size, filled, selected }: { shape: ShapeType; size: number; filled: boolean; selected: boolean }) => {
@@ -46,10 +42,9 @@ const ShapeView = ({ shape, size, filled, selected }: { shape: ShapeType; size: 
 
 export default function ShapesGame({ level, worldId, onComplete }: Props) {
   const theme = WorldThemes[worldId];
-  const allPieces = shuffle([...level.targets, ...level.extras]);
-  const [pieces, setPieces] = useState<ShapeType[]>(allPieces);
+  const [pieces, setPieces] = useState<ShapeType[]>([]);
   const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
-  const [placed, setPlaced] = useState<(ShapeType | null)[]>(level.targets.map(() => null));
+  const [placed, setPlaced] = useState<(ShapeType | null)[]>([]);
   const [mistakes, setMistakes] = useState(0);
   const [done, setDone] = useState(false);
   const [usedPieces, setUsedPieces] = useState<Set<number>>(new Set());
@@ -68,8 +63,8 @@ export default function ShapesGame({ level, worldId, onComplete }: Props) {
 
   const handleSelectPiece = (idx: number) => {
     if (usedPieces.has(idx) || done) return;
+    sfx.tap();
     setSelectedPiece(idx);
-    speak(pieces[idx]);
   };
 
   const handleTapSlot = (slotIdx: number) => {
@@ -77,6 +72,7 @@ export default function ShapesGame({ level, worldId, onComplete }: Props) {
     const targetShape = level.targets[slotIdx];
     const pieceShape = pieces[selectedPiece];
     if (pieceShape === targetShape) {
+      sfx.correct();
       const newPlaced = [...placed];
       newPlaced[slotIdx] = pieceShape;
       setPlaced(newPlaced);
@@ -84,18 +80,17 @@ export default function ShapesGame({ level, worldId, onComplete }: Props) {
       newUsed.add(selectedPiece);
       setUsedPieces(newUsed);
       setSelectedPiece(null);
-      speak('Great!', 1.1);
       if (newPlaced.every(p => p !== null)) {
         setDone(true);
         const stars = mistakes === 0 ? 3 : mistakes <= 2 ? 2 : 1;
         setTimeout(() => {
-          speak(stars === 3 ? 'Amazing!' : 'Well done!');
+          sfx.celebrate();
           onComplete(stars);
-        }, 800);
+        }, 1000);
       }
     } else {
+      sfx.wrong();
       setMistakes(m => m + 1);
-      speak('Try another shape!');
       setSelectedPiece(null);
     }
   };
