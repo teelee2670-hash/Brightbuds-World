@@ -96,6 +96,8 @@ const styles = StyleSheet.create({
   backBtn: { padding: Spacing.sm },
   backText: { ...Typography.bodyLg, color: Colors.text.heading },
   worldTitle: { ...Typography.h3, color: Colors.text.heading, flex: 1 },
+  homeBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: Colors.background.card, alignItems: 'center', justifyContent: 'center' },
+  homeText: { fontSize: 22 },
   tabs: { flexDirection: 'row', paddingHorizontal: Spacing.md, gap: Spacing.sm, marginBottom: Spacing.md },
   tab: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: Spacing.sm, borderRadius: Radius.full, borderWidth: 2, borderColor: 'transparent', backgroundColor: Colors.background.card },
   tabEmoji: { fontSize: 18 },
