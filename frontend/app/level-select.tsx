@@ -1,7 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius, Typography, WorldThemes, GameTypeInfo, WorldId, GameType } from '@/src/utils/theme';
 import { getProgress, GameProgress } from '@/src/storage/store';
@@ -14,12 +13,12 @@ export default function LevelSelect() {
   const [gameType, setGameType] = useState<GameType>('phonics');
   const [gameProgress, setGameProgress] = useState<GameProgress | null>(null);
 
-  useFocusEffect(useCallback(() => {
+  useEffect(() => {
     (async () => {
       const progress = await getProgress();
       setGameProgress(progress[wId]?.[gameType] || { unlockedLevel: 1, starsByLevel: [] });
     })();
-  }, [gameType, wId]));
+  }, [gameType, wId]);
 
   const TOTAL_LEVELS = 10;
   const levels = Array.from({ length: TOTAL_LEVELS }, (_, i) => i + 1);

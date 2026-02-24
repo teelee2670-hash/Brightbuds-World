@@ -1,7 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius, Typography, WorldThemes, WorldId } from '@/src/utils/theme';
 import { getProfile, getProgress, UserProfile, WorldProgress } from '@/src/storage/store';
@@ -27,13 +26,13 @@ export default function MapScreen() {
   const [isPremium, setIsPremium] = useState(false);
   const [showGate, setShowGate] = useState(false);
 
-  useFocusEffect(useCallback(() => {
+  useEffect(() => {
     (async () => {
       setProfileState(await getProfile());
       setProgress(await getProgress());
       setIsPremium(await checkPremium());
     })();
-  }, []));
+  }, []);
 
   const avatar = AVATARS.find(a => a.id === (profile?.avatarId || 'dino')) || AVATARS[0];
 

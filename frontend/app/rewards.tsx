@@ -1,7 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius, Typography } from '@/src/utils/theme';
 import { getRewards, setRewards, Rewards } from '@/src/storage/store';
@@ -15,12 +14,12 @@ export default function RewardsScreen() {
   const [rewards, setRewardsState] = useState<Rewards | null>(null);
   const [isPremium, setIsPremium] = useState(false);
 
-  useFocusEffect(useCallback(() => {
+  useEffect(() => {
     (async () => {
       setRewardsState(await getRewards());
       setIsPremium(await checkPremium());
     })();
-  }, []));
+  }, []);
 
   const allStickers = [...STICKERS.world1, ...(isPremium ? [...STICKERS.world2, ...STICKERS.world3] : [])];
 
