@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { Colors, Spacing, Radius, Typography, WorldThemes, WorldId } from '@/src/utils/theme';
 import { NumbersLevel, NUMBER_THEMES } from '@/src/data/gameLevels';
-import { speak } from '@/src/utils/audio';
+import { speak, sfx } from '@/src/utils/audio';
 
 type Props = { level: NumbersLevel; worldId: WorldId; onComplete: (stars: number) => void };
 
@@ -25,8 +25,8 @@ export default function NumbersGame({ level, worldId, onComplete }: Props) {
     setShowCheck(false);
     setFeedback('');
     setDone(false);
-    const msg = `${numTheme.action} ${level.targetNumber} ${numTheme.itemName} to the ${worldId === 'world1' ? 'baby dino' : worldId === 'world2' ? 'rocket' : 'puppy'}`;
-    setTimeout(() => speak(msg), 300);
+    const character = worldId === 'world1' ? 'baby dino' : worldId === 'world2' ? 'rocket' : 'puppy';
+    setTimeout(() => speak(`${numTheme.action} ${level.targetNumber} ${numTheme.itemName} to the ${character}`), 300);
   }, [level]);
 
   const handleTapItem = (idx: number) => {
@@ -36,7 +36,7 @@ export default function NumbersGame({ level, worldId, onComplete }: Props) {
     setTapped(newTapped);
     const newCount = count + 1;
     setCount(newCount);
-    speak(String(newCount), 1.1);
+    sfx.countUp(newCount);
     Animated.sequence([
       Animated.timing(bounceAnim, { toValue: 1.2, duration: 100, useNativeDriver: true }),
       Animated.spring(bounceAnim, { toValue: 1, useNativeDriver: true }),
@@ -48,18 +48,22 @@ export default function NumbersGame({ level, worldId, onComplete }: Props) {
     if (count === level.targetNumber) {
       setDone(true);
       const stars = attempts === 0 ? 3 : attempts === 1 ? 2 : 1;
-      speak(stars === 3 ? 'Perfect!' : 'Good job!');
-      setTimeout(() => onComplete(stars), 800);
+      sfx.celebrate();
+      setTimeout(() => onComplete(stars), 1000);
     } else {
       setAttempts(a => a + 1);
-      setFeedback(count < level.targetNumber ? `That's ${count}. We need ${level.targetNumber}!` : `Oops! ${count} is too many. We need ${level.targetNumber}!`);
-      speak(count < level.targetNumber ? 'Not enough! Try again!' : 'Too many! Try again!');
+      const msg = count < level.targetNumber
+        ? `That's ${count}. We need ${level.targetNumber}!`
+        : `Oops! ${count} is too many. We need ${level.targetNumber}!`;
+      setFeedback(msg);
+      sfx.wrong();
+      setTimeout(() => sfx.tryAgain(), 500);
       setTimeout(() => {
         setCount(0);
         setTapped(new Set());
         setShowCheck(false);
         setFeedback('');
-      }, 1500);
+      }, 1800);
     }
   };
 
