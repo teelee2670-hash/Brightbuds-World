@@ -35,6 +35,9 @@ export default function LevelSelect() {
           <Text style={styles.backText}>← Back</Text>
         </TouchableOpacity>
         <Text style={styles.worldTitle}>{theme.emoji} {theme.name}</Text>
+        <TouchableOpacity testID="level-home-btn" onPress={() => router.replace('/map')} style={styles.homeBtn}>
+          <Text style={styles.homeText}>🏠</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.tabs}>
