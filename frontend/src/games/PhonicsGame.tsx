@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { Colors, Spacing, Radius, Typography, WorldThemes, WorldId } from '@/src/utils/theme';
 import { PhonicsLevel, shuffle } from '@/src/data/gameLevels';
-import { speak } from '@/src/utils/audio';
+import { speak, sfx } from '@/src/utils/audio';
 
 type Props = { level: PhonicsLevel; worldId: WorldId; onComplete: (stars: number) => void };
 
@@ -29,23 +29,25 @@ export default function PhonicsGame({ level, worldId, onComplete }: Props) {
     if (found.has(idx) || done) return;
     const item = items[idx];
     if (item.isCorrect) {
+      sfx.correct();
       const newFound = new Set(found);
       newFound.add(idx);
       setFound(newFound);
-      speak(item.word, 1);
+      setTimeout(() => speak(item.word, 1), 400);
       if (newFound.size === totalCorrect) {
         setDone(true);
         const stars = mistakes === 0 ? 3 : mistakes === 1 ? 2 : 1;
         setTimeout(() => {
-          speak(stars === 3 ? 'Amazing!' : stars === 2 ? 'Great job!' : 'Good try!');
+          sfx.celebrate();
           onComplete(stars);
-        }, 800);
+        }, 1000);
       }
     } else {
       setMistakes(m => m + 1);
       setWrongIdx(idx);
-      speak('Try again!', 1);
-      setTimeout(() => setWrongIdx(null), 600);
+      sfx.wrong();
+      setTimeout(() => sfx.tryAgain(), 500);
+      setTimeout(() => setWrongIdx(null), 700);
     }
   }, [found, done, items, mistakes, totalCorrect, onComplete, level]);
 
