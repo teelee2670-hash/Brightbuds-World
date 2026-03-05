@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -152,7 +152,7 @@ const Sparkle = ({ delay }: { delay: number }) => {
         },
       ]}
     >
-      <View style={styles.sparkleInner}>✨</View>
+      <Text style={styles.sparkleText}>✨</Text>
     </Animated.View>
   );
 };
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
   sparkle: {
     position: 'absolute',
   },
-  sparkleInner: {
+  sparkleText: {
     fontSize: 20,
   },
 });
