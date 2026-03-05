@@ -17,21 +17,22 @@ const PATH_NODES = [
   { x: 0.15, y: 0.94, level: 1 },
   { x: 0.50, y: 0.84, level: 2 },
   { x: 0.85, y: 0.74, level: 3 },
-  { x: 0.65, y: 0.63, level: 4, hasReward: true, rewardType: 'coin' },
-  { x: 0.28, y: 0.53, level: 5 },
-  { x: 0.15, y: 0.42, level: 6 },
-  { x: 0.42, y: 0.32, level: 7, hasReward: true, rewardType: 'star' },
-  { x: 0.70, y: 0.22, level: 8 },
-  { x: 0.85, y: 0.14, level: 9 },
-  { x: 0.50, y: 0.06, level: 10, hasReward: true, rewardType: 'treasure' },
+  { x: 0.65, y: 0.62, level: 4, hasReward: true, rewardType: 'coin' },
+  { x: 0.30, y: 0.50, level: 5 },
+  { x: 0.12, y: 0.36, level: 6 },
+  { x: 0.40, y: 0.26, level: 7, hasReward: true, rewardType: 'star' },
+  { x: 0.70, y: 0.18, level: 8 },
+  { x: 0.85, y: 0.10, level: 9 },
+  { x: 0.50, y: 0.03, level: 10, hasReward: true, rewardType: 'treasure' },
 ];
 
 // Extra reward nodes between levels - rare collectibles on the path
+// Positioned away from level nodes to be easily tappable
 const BONUS_REWARDS = [
   { x: 0.32, y: 0.89, type: 'coin', requiredLevel: 2 },
   { x: 0.76, y: 0.68, type: 'gem', requiredLevel: 4 },
-  { x: 0.20, y: 0.47, type: 'coin', requiredLevel: 6 },
-  { x: 0.56, y: 0.27, type: 'gem', requiredLevel: 8 },
+  { x: 0.18, y: 0.43, type: 'coin', requiredLevel: 6 },
+  { x: 0.56, y: 0.22, type: 'gem', requiredLevel: 8 },
 ];
 
 interface Props {

@@ -89,7 +89,7 @@ export default function ResultsScreen() {
         )}
         <View style={styles.btnCol}>
           <KidButton title="Play Again" emoji="🔄" onPress={handlePlayAgain} testID="play-again-btn" color={theme.color} />
-          <KidButton title="Back to Map" emoji="🗺️" onPress={() => { stopSpeaking(); router.replace('/map'); }} testID="back-to-map-btn" color={Colors.action.secondary} />
+          <KidButton title="Back to Levels" emoji="🗺️" onPress={() => { stopSpeaking(); router.replace({ pathname: '/level-select', params: { worldId: wId } }); }} testID="back-to-map-btn" color={Colors.action.secondary} />
         </View>
       </Animated.View>
     </SafeAreaView>
