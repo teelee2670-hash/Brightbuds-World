@@ -4,9 +4,21 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius, Typography, WorldThemes, GameTypeInfo, WorldId, GameType } from '@/src/utils/theme';
-import { getProgress, getRewards, addSticker, setRewards, GameProgress, Rewards } from '@/src/storage/store';
+import { getProgress, getRewards, getProfile, addSticker, setRewards, GameProgress, Rewards } from '@/src/storage/store';
 import MarioPathMap from '@/src/components/MarioPathMap';
 import { sfx } from '@/src/utils/audio';
+
+// Avatar emoji mapping
+const AVATARS: Record<string, string> = {
+  dino: '🦕',
+  astronaut: '👨‍🚀',
+  puppy: '🐶',
+  kitten: '🐱',
+  bunny: '🐰',
+  panda: '🐼',
+  owl: '🦉',
+  fox: '🦊',
+};
 
 // Rare rewards that can be collected on the path
 const PATH_REWARDS = [
@@ -25,6 +37,7 @@ export default function LevelSelect() {
   const [gameProgress, setGameProgress] = useState<GameProgress | null>(null);
   const [rewards, setRewardsState] = useState<Rewards | null>(null);
   const [collectedPathRewards, setCollectedPathRewards] = useState<string[]>([]);
+  const [selectedAvatar, setSelectedAvatar] = useState<string>('🦕');
 
   // Refresh data when screen comes into focus
   useFocusEffect(
@@ -43,6 +56,11 @@ export default function LevelSelect() {
       rewardsData.stickersEarned.includes(`${wId}_${gameType}_${r.id}`)
     ).map(r => r.id);
     setCollectedPathRewards(collected);
+    
+    // Get user's selected avatar
+    const profile = await getProfile();
+    const avatarEmoji = AVATARS[profile.avatar] || '🦕';
+    setSelectedAvatar(avatarEmoji);
   };
 
   const handleLevel = (level: number) => {
@@ -145,6 +163,7 @@ export default function LevelSelect() {
         worldId={wId}
         gameType={gameType}
         gameProgress={gameProgress}
+        selectedAvatar={selectedAvatar}
         onLevelPress={handleLevel}
         onRewardPress={handleRewardPress}
       />

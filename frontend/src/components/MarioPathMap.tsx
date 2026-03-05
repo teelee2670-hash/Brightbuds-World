@@ -2,46 +2,79 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Animated, Dimensions, TouchableOpacity } from 'react-native';
 import { Colors, Spacing, Radius, Typography, WorldThemes, WorldId, GameType } from '@/src/utils/theme';
 import { GameProgress } from '@/src/storage/store';
+import { getWorldPath, PathNode, BonusReward } from '@/src/data/worldPaths';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-// Use a fixed width that works well across screen sizes
 const MAP_WIDTH = Math.min(SCREEN_WIDTH - 48, 340);
-const MAP_HEIGHT = 520; // Reduced to fit better in viewport
+const MAP_HEIGHT = 520;
 const NODE_SIZE = 50;
 const PATH_WIDTH = 10;
-const NODE_MARGIN = NODE_SIZE / 2 + 8; // Margin to keep nodes from edges
-
-// Path coordinates for a winding Mario-style path (zigzag pattern)
-// y values from 0.12 to 0.95 to leave room for castle at top and START at bottom
-const PATH_NODES = [
-  { x: 0.15, y: 0.94, level: 1 },
-  { x: 0.50, y: 0.84, level: 2 },
-  { x: 0.85, y: 0.74, level: 3 },
-  { x: 0.65, y: 0.62, level: 4, hasReward: true, rewardType: 'coin' },
-  { x: 0.30, y: 0.50, level: 5 },
-  { x: 0.12, y: 0.36, level: 6 },
-  { x: 0.40, y: 0.26, level: 7, hasReward: true, rewardType: 'star' },
-  { x: 0.70, y: 0.18, level: 8 },
-  { x: 0.85, y: 0.10, level: 9 },
-  { x: 0.50, y: 0.03, level: 10, hasReward: true, rewardType: 'treasure' },
-];
-
-// Extra reward nodes between levels - rare collectibles on the path
-// Positioned away from level nodes to be easily tappable
-const BONUS_REWARDS = [
-  { x: 0.32, y: 0.89, type: 'coin', requiredLevel: 2 },
-  { x: 0.76, y: 0.68, type: 'gem', requiredLevel: 4 },
-  { x: 0.18, y: 0.43, type: 'coin', requiredLevel: 6 },
-  { x: 0.56, y: 0.22, type: 'gem', requiredLevel: 8 },
-];
+const CHARACTER_SIZE = 40;
 
 interface Props {
   worldId: WorldId;
   gameType: GameType;
   gameProgress: GameProgress | null;
+  selectedAvatar: string;  // User's selected avatar emoji
   onLevelPress: (level: number) => void;
   onRewardPress?: (rewardType: string, index: number) => void;
 }
+
+// Walking Character Component
+const WalkingCharacter = ({ 
+  avatar, 
+  x, 
+  y, 
+  worldColor 
+}: { 
+  avatar: string; 
+  x: number; 
+  y: number; 
+  worldColor: string;
+}) => {
+  const bounceAnim = useRef(new Animated.Value(0)).current;
+  const walkAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Bouncing animation (walking effect)
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(bounceAnim, { toValue: -8, duration: 300, useNativeDriver: true }),
+        Animated.timing(bounceAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
+      ])
+    ).start();
+
+    // Slight side-to-side sway
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(walkAnim, { toValue: 3, duration: 400, useNativeDriver: true }),
+        Animated.timing(walkAnim, { toValue: -3, duration: 400, useNativeDriver: true }),
+      ])
+    ).start();
+  }, []);
+
+  return (
+    <Animated.View
+      style={[
+        styles.characterContainer,
+        {
+          left: x - CHARACTER_SIZE / 2,
+          top: y - CHARACTER_SIZE - 10,  // Position above the level node
+          transform: [
+            { translateY: bounceAnim },
+            { translateX: walkAnim },
+          ],
+        },
+      ]}
+    >
+      <View style={[styles.characterBubble, { borderColor: worldColor }]}>
+        <Text style={styles.characterEmoji}>{avatar}</Text>
+      </View>
+      {/* Speech bubble indicator */}
+      <View style={[styles.speechPointer, { borderTopColor: worldColor }]} />
+    </Animated.View>
+  );
+};
 
 // Animated Level Node Component
 const AnimatedLevelNode = ({ 
@@ -69,7 +102,6 @@ const AnimatedLevelNode = ({
 
   useEffect(() => {
     if (current) {
-      // Bouncing animation for current level
       Animated.loop(
         Animated.sequence([
           Animated.timing(bounceAnim, { toValue: 1.15, duration: 500, useNativeDriver: true }),
@@ -77,7 +109,6 @@ const AnimatedLevelNode = ({
         ])
       ).start();
 
-      // Glow animation
       Animated.loop(
         Animated.sequence([
           Animated.timing(glowAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
@@ -85,7 +116,6 @@ const AnimatedLevelNode = ({
         ])
       ).start();
     } else if (unlocked) {
-      // Subtle pulse for unlocked levels
       Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, { toValue: 1.05, duration: 1500, useNativeDriver: true }),
@@ -108,16 +138,9 @@ const AnimatedLevelNode = ({
   return (
     <TouchableOpacity onPress={onPress} disabled={!unlocked} activeOpacity={0.7}>
       <Animated.View style={[styles.levelNodeContainer, { transform: [{ scale }] }]}>
-        {/* Glow effect for current level */}
         {current && (
           <Animated.View 
-            style={[
-              styles.glowRing, 
-              { 
-                borderColor: worldColor,
-                opacity: glowAnim,
-              }
-            ]} 
+            style={[styles.glowRing, { borderColor: worldColor, opacity: glowAnim }]} 
           />
         )}
         
@@ -140,14 +163,12 @@ const AnimatedLevelNode = ({
           )}
         </View>
 
-        {/* Reward badge on special nodes */}
         {hasReward && unlocked && (
           <View style={[styles.rewardBadge, { backgroundColor: getRewardColor(rewardType) }]}>
             <Text style={styles.rewardBadgeEmoji}>{getRewardEmoji(rewardType)}</Text>
           </View>
         )}
 
-        {/* Level flag for milestone levels */}
         {(level === 5 || level === 10) && (
           <View style={styles.flagContainer}>
             <Text style={styles.flagEmoji}>{level === 10 ? '🏆' : '🚩'}</Text>
@@ -158,14 +179,13 @@ const AnimatedLevelNode = ({
   );
 };
 
-// Bonus Reward Component (rewards on the path)
-const BonusReward = ({ type, collected, onPress }: { type: string; collected: boolean; onPress: () => void }) => {
+// Bonus Reward Component
+const BonusRewardNode = ({ type, collected, onPress }: { type: string; collected: boolean; onPress: () => void }) => {
   const floatAnim = useRef(new Animated.Value(0)).current;
   const sparkleAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     if (!collected) {
-      // Floating animation
       Animated.loop(
         Animated.sequence([
           Animated.timing(floatAnim, { toValue: -8, duration: 1000, useNativeDriver: true }),
@@ -173,7 +193,6 @@ const BonusReward = ({ type, collected, onPress }: { type: string; collected: bo
         ])
       ).start();
 
-      // Sparkle animation
       Animated.loop(
         Animated.sequence([
           Animated.timing(sparkleAnim, { toValue: 1.2, duration: 600, useNativeDriver: true }),
@@ -230,7 +249,7 @@ const getRewardColor = (type?: string) => {
 };
 
 // Path segment drawing
-const PathSegment = ({ from, to, worldColor, completed }: { from: { x: number; y: number }; to: { x: number; y: number }; worldColor: string; completed: boolean }) => {
+const PathSegment = ({ from, to, worldColor, completed }: { from: PathNode; to: PathNode; worldColor: string; completed: boolean }) => {
   const x1 = from.x * MAP_WIDTH;
   const y1 = from.y * MAP_HEIGHT;
   const x2 = to.x * MAP_WIDTH;
@@ -255,14 +274,25 @@ const PathSegment = ({ from, to, worldColor, completed }: { from: { x: number; y
   );
 };
 
-export default function MarioPathMap({ worldId, gameType, gameProgress, onLevelPress, onRewardPress }: Props) {
+export default function MarioPathMap({ 
+  worldId, 
+  gameType, 
+  gameProgress, 
+  selectedAvatar,
+  onLevelPress, 
+  onRewardPress 
+}: Props) {
   const theme = WorldThemes[worldId];
+  const pathConfig = getWorldPath(worldId);
   const scrollRef = useRef<ScrollView>(null);
   const unlockedLevel = gameProgress?.unlockedLevel || 1;
 
-  // Auto-scroll to current level on mount
+  // Get current level position for character
+  const currentNode = pathConfig.pathNodes.find(n => n.level === unlockedLevel);
+  const characterX = currentNode ? currentNode.x * MAP_WIDTH : 0;
+  const characterY = currentNode ? currentNode.y * MAP_HEIGHT : 0;
+
   useEffect(() => {
-    const currentNode = PATH_NODES.find(n => n.level === unlockedLevel);
     if (currentNode && scrollRef.current) {
       setTimeout(() => {
         scrollRef.current?.scrollTo({
@@ -272,22 +302,6 @@ export default function MarioPathMap({ worldId, gameType, gameProgress, onLevelP
       }, 500);
     }
   }, [unlockedLevel]);
-
-  // Background decorations based on world
-  const getWorldDecorations = () => {
-    switch (worldId) {
-      case 'world1':
-        return ['🌿', '🌴', '🦕', '🌋', '🌸', '🦎', '🥚', '🌺'];
-      case 'world2':
-        return ['⭐', '🌙', '🪐', '🛸', '☄️', '🌟', '🌌', '✨'];
-      case 'world3':
-        return ['🌸', '🏠', '🌳', '🦋', '🌺', '🐦', '🌷', '☘️'];
-      default:
-        return ['🌿', '🌸', '⭐'];
-    }
-  };
-
-  const decorations = getWorldDecorations();
 
   return (
     <ScrollView 
@@ -299,7 +313,7 @@ export default function MarioPathMap({ worldId, gameType, gameProgress, onLevelP
       {/* Map area */}
       <View style={styles.mapArea}>
         {/* Background decorations */}
-        {decorations.map((emoji, i) => (
+        {pathConfig.decorations.map((emoji, i) => (
           <Text 
             key={i} 
             style={[
@@ -317,20 +331,20 @@ export default function MarioPathMap({ worldId, gameType, gameProgress, onLevelP
         ))}
 
         {/* Path segments */}
-        {PATH_NODES.slice(0, -1).map((node, i) => (
+        {pathConfig.pathNodes.slice(0, -1).map((node, i) => (
           <PathSegment
             key={`path-${i}`}
             from={node}
-            to={PATH_NODES[i + 1]}
+            to={pathConfig.pathNodes[i + 1]}
             worldColor={theme.color}
             completed={node.level < unlockedLevel}
           />
         ))}
 
-        {/* Bonus rewards on path - rare collectibles */}
-        {BONUS_REWARDS.map((reward, i) => {
+        {/* Bonus rewards on path */}
+        {pathConfig.bonusRewards.map((reward, i) => {
           const available = unlockedLevel >= reward.requiredLevel;
-          const collected = false; // You can track this in storage
+          const collected = false;
           
           return (
             <View
@@ -341,7 +355,7 @@ export default function MarioPathMap({ worldId, gameType, gameProgress, onLevelP
               ]}
             >
               {available && (
-                <BonusReward 
+                <BonusRewardNode 
                   type={reward.type} 
                   collected={collected}
                   onPress={() => onRewardPress?.(reward.type, i)}
@@ -352,7 +366,7 @@ export default function MarioPathMap({ worldId, gameType, gameProgress, onLevelP
         })}
 
         {/* Level nodes */}
-        {PATH_NODES.map((node) => (
+        {pathConfig.pathNodes.map((node) => (
           <View
             key={`level-${node.level}`}
             style={[
@@ -373,15 +387,23 @@ export default function MarioPathMap({ worldId, gameType, gameProgress, onLevelP
           </View>
         ))}
 
+        {/* Walking character at current level */}
+        <WalkingCharacter
+          avatar={selectedAvatar || '🦕'}
+          x={characterX}
+          y={characterY}
+          worldColor={theme.color}
+        />
+
         {/* Start banner */}
-        <View style={[styles.startBanner, { left: PATH_NODES[0].x * MAP_WIDTH - 30, top: PATH_NODES[0].y * MAP_HEIGHT + 35 }]}>
+        <View style={[styles.startBanner, { left: pathConfig.pathNodes[0].x * MAP_WIDTH - 30, top: pathConfig.pathNodes[0].y * MAP_HEIGHT + 35 }]}>
           <Text style={styles.startText}>START</Text>
           <Text style={styles.startArrow}>↑</Text>
         </View>
 
-        {/* Finish castle/goal - positioned above level 10, but not overlapping */}
-        <View style={[styles.finishArea, { left: PATH_NODES[9].x * MAP_WIDTH - 30, top: -70 }]}>
-          <Text style={styles.finishEmoji}>🏰</Text>
+        {/* Finish castle/goal */}
+        <View style={[styles.finishArea, { left: pathConfig.pathNodes[9].x * MAP_WIDTH - 30, top: -70 }]}>
+          <Text style={styles.finishEmoji}>{pathConfig.castleEmoji}</Text>
           <Text style={styles.finishText}>GOAL!</Text>
         </View>
       </View>
@@ -402,19 +424,8 @@ const styles = StyleSheet.create({
   mapContent: {
     minHeight: MAP_HEIGHT + 100,
     paddingBottom: Spacing.xl,
-    paddingTop: 80, // More space for castle at top
+    paddingTop: 80,
     alignItems: 'center',
-  },
-  worldHeader: {
-    alignItems: 'center',
-    paddingVertical: Spacing.md,
-  },
-  worldEmoji: {
-    fontSize: 40,
-  },
-  worldName: {
-    ...Typography.h3,
-    marginTop: Spacing.xs,
   },
   mapArea: {
     width: MAP_WIDTH,
@@ -588,7 +599,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
   progressBar: {
-    marginHorizontal: 16,
+    width: MAP_WIDTH,
     marginTop: Spacing.lg,
     height: 24,
     backgroundColor: Colors.background.card,
@@ -608,5 +619,38 @@ const styles = StyleSheet.create({
     color: Colors.text.heading,
     textAlign: 'center',
     fontSize: 12,
+  },
+  // Character styles
+  characterContainer: {
+    position: 'absolute',
+    alignItems: 'center',
+    zIndex: 50,
+  },
+  characterBubble: {
+    width: CHARACTER_SIZE,
+    height: CHARACTER_SIZE,
+    borderRadius: CHARACTER_SIZE / 2,
+    backgroundColor: '#FFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  characterEmoji: {
+    fontSize: 24,
+  },
+  speechPointer: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 6,
+    borderRightWidth: 6,
+    borderTopWidth: 8,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    marginTop: -1,
   },
 });
