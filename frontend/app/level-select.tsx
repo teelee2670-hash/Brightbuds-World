@@ -113,6 +113,11 @@ export default function LevelSelect() {
       </View>
 
       {/* Game type tabs */}
+      <View style={styles.worldTitleRow}>
+        <Text style={[styles.worldEmoji]}>{theme.emoji}</Text>
+        <Text style={[styles.worldTitle, { color: theme.color }]}>{theme.name}</Text>
+      </View>
+      
       <View style={styles.tabs}>
         {(['phonics', 'numbers', 'shapes'] as GameType[]).map(gt => {
           const info = GameTypeInfo[gt];
@@ -230,5 +235,19 @@ const styles = StyleSheet.create({
     ...Typography.bodyMd, 
     color: Colors.text.muted, 
     fontWeight: '600',
+  },
+  worldTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.xs,
+  },
+  worldEmoji: {
+    fontSize: 28,
+  },
+  worldTitle: {
+    ...Typography.h3,
+    fontWeight: '700',
   },
 });

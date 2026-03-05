@@ -6,32 +6,32 @@ import { GameProgress } from '@/src/storage/store';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 // Use a fixed width that works well across screen sizes
 const MAP_WIDTH = Math.min(SCREEN_WIDTH - 48, 340);
-const MAP_HEIGHT = 550; // Reduced to fit better in viewport
+const MAP_HEIGHT = 520; // Reduced to fit better in viewport
 const NODE_SIZE = 50;
 const PATH_WIDTH = 10;
 const NODE_MARGIN = NODE_SIZE / 2 + 8; // Margin to keep nodes from edges
 
 // Path coordinates for a winding Mario-style path (zigzag pattern)
-// y values from 0.05 to 0.90 to leave room for nodes
+// y values from 0.12 to 0.95 to leave room for castle at top and START at bottom
 const PATH_NODES = [
-  { x: 0.15, y: 0.88, level: 1 },
-  { x: 0.50, y: 0.78, level: 2 },
-  { x: 0.85, y: 0.68, level: 3 },
-  { x: 0.65, y: 0.56, level: 4, hasReward: true, rewardType: 'coin' },
-  { x: 0.28, y: 0.46, level: 5 },
-  { x: 0.15, y: 0.34, level: 6 },
-  { x: 0.42, y: 0.24, level: 7, hasReward: true, rewardType: 'star' },
-  { x: 0.70, y: 0.14, level: 8 },
-  { x: 0.85, y: 0.05, level: 9 },
-  { x: 0.50, y: -0.02, level: 10, hasReward: true, rewardType: 'treasure' },
+  { x: 0.15, y: 0.94, level: 1 },
+  { x: 0.50, y: 0.84, level: 2 },
+  { x: 0.85, y: 0.74, level: 3 },
+  { x: 0.65, y: 0.63, level: 4, hasReward: true, rewardType: 'coin' },
+  { x: 0.28, y: 0.53, level: 5 },
+  { x: 0.15, y: 0.42, level: 6 },
+  { x: 0.42, y: 0.32, level: 7, hasReward: true, rewardType: 'star' },
+  { x: 0.70, y: 0.22, level: 8 },
+  { x: 0.85, y: 0.14, level: 9 },
+  { x: 0.50, y: 0.06, level: 10, hasReward: true, rewardType: 'treasure' },
 ];
 
 // Extra reward nodes between levels - rare collectibles on the path
 const BONUS_REWARDS = [
-  { x: 0.32, y: 0.83, type: 'coin', requiredLevel: 2 },
-  { x: 0.76, y: 0.62, type: 'gem', requiredLevel: 4 },
-  { x: 0.20, y: 0.40, type: 'coin', requiredLevel: 6 },
-  { x: 0.56, y: 0.19, type: 'gem', requiredLevel: 8 },
+  { x: 0.32, y: 0.89, type: 'coin', requiredLevel: 2 },
+  { x: 0.76, y: 0.68, type: 'gem', requiredLevel: 4 },
+  { x: 0.20, y: 0.47, type: 'coin', requiredLevel: 6 },
+  { x: 0.56, y: 0.27, type: 'gem', requiredLevel: 8 },
 ];
 
 interface Props {
@@ -295,12 +295,6 @@ export default function MarioPathMap({ worldId, gameType, gameProgress, onLevelP
       contentContainerStyle={[styles.mapContent, { backgroundColor: theme.bg }]}
       showsVerticalScrollIndicator={false}
     >
-      {/* World title at top */}
-      <View style={styles.worldHeader}>
-        <Text style={styles.worldEmoji}>{theme.emoji}</Text>
-        <Text style={[styles.worldName, { color: theme.color }]}>{theme.name}</Text>
-      </View>
-
       {/* Map area */}
       <View style={styles.mapArea}>
         {/* Background decorations */}
@@ -384,8 +378,8 @@ export default function MarioPathMap({ worldId, gameType, gameProgress, onLevelP
           <Text style={styles.startArrow}>↑</Text>
         </View>
 
-        {/* Finish castle/goal */}
-        <View style={[styles.finishArea, { left: PATH_NODES[9].x * MAP_WIDTH - 25, top: PATH_NODES[9].y * MAP_HEIGHT - 70 }]}>
+        {/* Finish castle/goal - positioned above level 10, but not overlapping */}
+        <View style={[styles.finishArea, { left: PATH_NODES[9].x * MAP_WIDTH - 30, top: -70 }]}>
           <Text style={styles.finishEmoji}>🏰</Text>
           <Text style={styles.finishText}>GOAL!</Text>
         </View>
@@ -405,8 +399,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   mapContent: {
-    minHeight: MAP_HEIGHT + 180,
+    minHeight: MAP_HEIGHT + 100,
     paddingBottom: Spacing.xl,
+    paddingTop: 80, // More space for castle at top
     alignItems: 'center',
   },
   worldHeader: {
