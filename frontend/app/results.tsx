@@ -146,7 +146,7 @@ export default function ResultsScreen() {
           <KidButton 
             title={beatTheGame ? "Back to Castle" : "Back to Levels"} 
             emoji={beatTheGame ? "🏰" : "🗺️"} 
-            onPress={() => { stopSpeaking(); router.replace({ pathname: '/level-select', params: { worldId: wId } }); }} 
+            onPress={() => { stopSpeaking(); router.replace({ pathname: '/level-select', params: { worldId: wId, gameType: gType } }); }} 
             testID="back-to-map-btn" 
             color={beatTheGame ? theme.color : Colors.action.secondary} 
           />

@@ -286,11 +286,21 @@ export default function MarioPathMap({
   const pathConfig = getWorldPath(worldId);
   const scrollRef = useRef<ScrollView>(null);
   const unlockedLevel = gameProgress?.unlockedLevel || 1;
+  
+  // Check if all levels are beaten (unlocked level > 10 means they beat level 10)
+  const allLevelsBeaten = unlockedLevel > 10;
 
   // Get current level position for character
-  const currentNode = pathConfig.pathNodes.find(n => n.level === unlockedLevel);
-  const characterX = currentNode ? currentNode.x * MAP_WIDTH : 0;
-  const characterY = currentNode ? currentNode.y * MAP_HEIGHT : 0;
+  // If all levels beaten, position at the castle (level 10 position but higher up)
+  const currentNode = allLevelsBeaten 
+    ? pathConfig.pathNodes[9]  // Level 10 node
+    : pathConfig.pathNodes.find(n => n.level === unlockedLevel);
+  
+  // Position character at current level, or at castle if all beaten
+  const characterX = currentNode ? currentNode.x * MAP_WIDTH : pathConfig.pathNodes[0].x * MAP_WIDTH;
+  const characterY = allLevelsBeaten 
+    ? -30  // At the castle/goal position
+    : (currentNode ? currentNode.y * MAP_HEIGHT : pathConfig.pathNodes[0].y * MAP_HEIGHT);
 
   useEffect(() => {
     if (currentNode && scrollRef.current) {
